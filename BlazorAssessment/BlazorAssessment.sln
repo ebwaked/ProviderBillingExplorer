@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataIngestionConsole", "DataIngestionConsole\DataIngestionConsole.csproj", "{6A29FAF7-403B-4C4A-AC6C-BD769051B691}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProviderBillingBlazor", "ProviderBillingBlazor\ProviderBillingBlazor.csproj", "{5CAE7E52-39CD-4190-9D72-C842BD4F8290}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A29FAF7-403B-4C4A-AC6C-BD769051B691}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A29FAF7-403B-4C4A-AC6C-BD769051B691}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A29FAF7-403B-4C4A-AC6C-BD769051B691}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A29FAF7-403B-4C4A-AC6C-BD769051B691}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CAE7E52-39CD-4190-9D72-C842BD4F8290}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CAE7E52-39CD-4190-9D72-C842BD4F8290}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CAE7E52-39CD-4190-9D72-C842BD4F8290}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CAE7E52-39CD-4190-9D72-C842BD4F8290}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
