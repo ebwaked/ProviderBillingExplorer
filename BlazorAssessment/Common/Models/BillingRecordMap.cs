@@ -10,7 +10,7 @@ namespace Common.Models
         {
             Map(m => m.NPI).Name("Rndrng_NPI");
             Map(m => m.ProviderName).Name("Rndrng_Prvdr_Last_Org_Name");
-            Map(m => m.Specialty).Name("Rndrng_Prvdr_Crdntls"); // Assuming credentials as specialty proxy
+            Map(m => m.Specialty).Name("Rndrng_Prvdr_Crdntls");
             Map(m => m.State).Name("Rndrng_Prvdr_State_Abrvtn");
             Map(m => m.HCPCScode).Name("HCPCS_Cd");
             Map(m => m.PlaceOfService).Name("Place_Of_Srvc");
