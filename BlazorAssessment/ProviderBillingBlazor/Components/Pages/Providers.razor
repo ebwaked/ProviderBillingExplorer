@@ -1,0 +1,17 @@
+﻿@using ProviderBilling.Data
+@page "/providers"
+@inject ProviderBillingContext Db
+
+<h1>Providers</h1>
+@* <input @bind="searchTerm" @oninput="OnSearchInput" placeholder="Search NPI or Name" />
+<select @bind="selectedSpecialty">...</select>
+<select @bind="selectedState">...</select>
+
+<Virtualize Items="@filteredProviders" Context="provider">
+    <tr>
+        <td>@provider.NPI</td>
+        <td>@provider.Name</td>
+        <td>@provider.Specialty</td>
+        <td>@provider.State</td>
+    </tr>
+</Virtualize> *@

@@ -1,0 +1,22 @@
+﻿@using ProviderBilling.Data
+
+@page "/provider/{Npi:int}"
+@inject ProviderBillingContext Db
+
+<!-- Table for top 10 HCPCS codes -->
+<table>
+    <thead>Top 10 HCPCS codes by total Medicare payment</thead>
+    <tbody>
+        @* @foreach (var item in topHcpcs)
+        {
+            <tr>
+                <td>@item.HcpcsCode</td>
+                <td>@item.Description</td>
+                <td>@item.ServiceCount</td>
+                <td>@item.TotalPayment</td>
+            </tr>
+        } *@
+    </tbody>
+</table>
+
+<!-- Optional: ChartJs.Blazor bar chart here -->

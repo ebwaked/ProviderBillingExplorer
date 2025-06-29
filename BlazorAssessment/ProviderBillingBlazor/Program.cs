@@ -1,10 +1,19 @@
+using Microsoft.EntityFrameworkCore;
+using ProviderBilling.Data;
 using ProviderBillingBlazor.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Build the absolute path to the database, relative to the project directory
+var projectDir = AppContext.BaseDirectory;
+var dbPath = Path.GetFullPath(Path.Combine(projectDir, @"..\..\Data\database.db"));
+
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+   .AddInteractiveServerComponents();
+
+builder.Services.AddDbContext<ProviderBillingContext>(options =>
+   options.UseSqlite($"Data Source={dbPath}"));
 
 var app = builder.Build();
 
@@ -22,6 +31,6 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+   .AddInteractiveServerRenderMode();
 
 app.Run();
