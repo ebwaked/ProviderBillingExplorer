@@ -5,6 +5,7 @@ using Microsoft.Data.Sqlite;
 using System.Globalization;
 using Common.Models;
 using DataIngestionConsole;
+using System.Diagnostics;
 
 Console.WriteLine("Hello CompIQ!");
 
@@ -22,7 +23,13 @@ try
     }
     else
     {
+        var sw = Stopwatch.StartNew();
+        TimeSpan ts = sw.Elapsed;
+        Console.WriteLine($"Stopwatch elaped time: {string.Format("{0}:{1}", Math.Floor(ts.TotalMinutes), ts.ToString("ss\\.ff"))}");
         var hydated = await sqlUtil.HydrateDbAsync();
+        sw.Stop();
+        ts = sw.Elapsed;
+        Console.WriteLine($"Stopwatch elaped time: {string.Format("{0}:{1}", Math.Floor(ts.TotalMinutes), ts.ToString("ss\\.ff"))}");
     }
 }
 catch (Exception ex)

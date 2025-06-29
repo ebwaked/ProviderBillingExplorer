@@ -68,92 +68,95 @@ namespace DataIngestionConsole
                 TrimOptions = TrimOptions.Trim
             };
 
-            // Read all records into memory (if memory allows)
-            List<BillingRecord> records = new List<BillingRecord>();
+            using var connection = new SqliteConnection($"Data Source={_dbPath}");
+            await connection.OpenAsync();
+
+            // Prepare provider cache to avoid duplicate inserts
+            var providerNpis = new HashSet<string>();
+
+            // Prepare commands
+            using var providerCmd = connection.CreateCommand();
+            providerCmd.CommandText = @"
+        INSERT OR IGNORE INTO Provider (NPI, ProviderName, Specialty, State)
+        VALUES (@NPI, @ProviderName, @Specialty, @State)";
+            var npiParam = providerCmd.Parameters.Add("@NPI", SqliteType.Text);
+            var nameParam = providerCmd.Parameters.Add("@ProviderName", SqliteType.Text);
+            var specParam = providerCmd.Parameters.Add("@Specialty", SqliteType.Text);
+            var stateParam = providerCmd.Parameters.Add("@State", SqliteType.Text);
+
+            using var billingCmd = connection.CreateCommand();
+            billingCmd.CommandText = @"
+        INSERT INTO BillingRecord (NPI, HCPCScode, PlaceOfService, NumberOfServices, TotalMedicarePayment)
+        VALUES (@NPI, @HCPCScode, @PlaceOfService, @NumberOfServices, @TotalMedicarePayment)";
+            var bNpiParam = billingCmd.Parameters.Add("@NPI", SqliteType.Text);
+            var hcpcsParam = billingCmd.Parameters.Add("@HCPCScode", SqliteType.Text);
+            var posParam = billingCmd.Parameters.Add("@PlaceOfService", SqliteType.Text);
+            var numParam = billingCmd.Parameters.Add("@NumberOfServices", SqliteType.Integer);
+            var payParam = billingCmd.Parameters.Add("@TotalMedicarePayment", SqliteType.Real);
+
+            int count = 0;
+            int batchSize = 1000;
+
             using (var stream = new FileStream(_csvFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
             using (var reader = new StreamReader(stream))
             using (var csv = new CsvReader(reader, config))
             {
                 csv.Context.RegisterClassMap<BillingRecordMap>();
-                await foreach (var record in csv.GetRecordsAsync<BillingRecord>())
+                var records = csv.GetRecordsAsync<BillingRecord>();
+
+                var transaction = connection.BeginTransaction();
+                providerCmd.Transaction = transaction;
+                billingCmd.Transaction = transaction;
+
+                await foreach (var record in records)
                 {
-                    records.Add(record);
+                    // Insert provider if not already inserted
+                    if (providerNpis.Add(record.NPI))
+                    {
+                        npiParam.Value = record.NPI;
+                        nameParam.Value = record.ProviderName;
+                        specParam.Value = record.Specialty ?? string.Empty;
+                        stateParam.Value = record.State;
+                        providerCmd.ExecuteNonQuery();
+                    }
+
+                    // Insert billing record
+                    bNpiParam.Value = record.NPI;
+                    hcpcsParam.Value = record.HCPCScode;
+                    posParam.Value = record.PlaceOfService;
+                    numParam.Value = record.NumberOfServices;
+                    payParam.Value = record.TotalMedicarePayment;
+                    billingCmd.ExecuteNonQuery();
+
+                    count++;
+                    if (count % batchSize == 0)
+                    {
+                        transaction.Commit();
+                        Console.WriteLine($"Inserted {count} records...");
+                        transaction.Dispose();
+
+                        // Start new transaction and assign to commands
+                        transaction = connection.BeginTransaction();
+                        providerCmd.Transaction = transaction;
+                        billingCmd.Transaction = transaction;
+                    }
                 }
+                transaction.Commit();
+                transaction.Dispose();
             }
 
-            // Extract distinct providers
-            var providers = records
-                .GroupBy(r => r.NPI)
-                .Select(g => g.First())
-                .ToList();
-
-            using var connection = new SqliteConnection($"Data Source={_dbPath}");
-            await connection.OpenAsync();
-
-            // Insert providers in a transaction
-            using (var transaction = connection.BeginTransaction())
+            // Add indexes after all inserts
             using (var cmd = connection.CreateCommand())
             {
                 cmd.CommandText = @"
-               INSERT OR IGNORE INTO Provider (NPI, ProviderName, Specialty, State)
-               VALUES (@NPI, @ProviderName, @Specialty, @State)";
-                var npiParam = cmd.Parameters.Add("@NPI", SqliteType.Text);
-                var nameParam = cmd.Parameters.Add("@ProviderName", SqliteType.Text);
-                var specParam = cmd.Parameters.Add("@Specialty", SqliteType.Text);
-                var stateParam = cmd.Parameters.Add("@State", SqliteType.Text);
-
-                foreach (var p in providers)
-                {
-                    npiParam.Value = p.NPI;
-                    nameParam.Value = p.ProviderName;
-                    specParam.Value = p.Specialty ?? string.Empty;
-                    stateParam.Value = p.State;
-                    cmd.ExecuteNonQuery();
-                }
-                transaction.Commit();
-            }
-
-            // Insert billing records in batches
-            const int batchSize = 1000;
-            int total = records.Count;
-            for (int i = 0; i < records.Count; i += batchSize)
-            {
-                using var transaction = connection.BeginTransaction();
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = @"
-               INSERT INTO BillingRecord (NPI, HCPCScode, PlaceOfService, NumberOfServices, TotalMedicarePayment)
-               VALUES (@NPI, @HCPCScode, @PlaceOfService, @NumberOfServices, @TotalMedicarePayment)";
-                var npiParam = cmd.Parameters.Add("@NPI", SqliteType.Text);
-                var hcpcsParam = cmd.Parameters.Add("@HCPCScode", SqliteType.Text);
-                var posParam = cmd.Parameters.Add("@PlaceOfService", SqliteType.Text);
-                var numParam = cmd.Parameters.Add("@NumberOfServices", SqliteType.Integer);
-                var payParam = cmd.Parameters.Add("@TotalMedicarePayment", SqliteType.Real);
-
-                for (int j = i; j < Math.Min(i + batchSize, records.Count); j++)
-                {
-                    var r = records[j];
-                    npiParam.Value = r.NPI;
-                    hcpcsParam.Value = r.HCPCScode;
-                    posParam.Value = r.PlaceOfService;
-                    numParam.Value = r.NumberOfServices;
-                    payParam.Value = r.TotalMedicarePayment;
-                    cmd.ExecuteNonQuery();
-                }
-                transaction.Commit();
-                Console.WriteLine($"Inserted {Math.Min(i + batchSize, total)} of {total} records ({(Math.Min(i + batchSize, total) * 100 / total)}%)");
-            }
-
-            // Add indexes (optional, but recommended for query performance)
-            using (var cmd = connection.CreateCommand())
-            {
-                cmd.CommandText = @"
-               CREATE INDEX IF NOT EXISTS idx_provider_npi ON Provider(NPI);
-               CREATE INDEX IF NOT EXISTS idx_provider_specialty ON Provider(Specialty);
-               CREATE INDEX IF NOT EXISTS idx_provider_state ON Provider(State);
-               CREATE INDEX IF NOT EXISTS idx_billing_hcpcs ON BillingRecord(HCPCScode);";
+            CREATE INDEX IF NOT EXISTS idx_provider_npi ON Provider(NPI);
+            CREATE INDEX IF NOT EXISTS idx_provider_specialty ON Provider(Specialty);
+            CREATE INDEX IF NOT EXISTS idx_provider_state ON Provider(State);
+            CREATE INDEX IF NOT EXISTS idx_billing_hcpcs ON BillingRecord(HCPCScode);";
                 cmd.ExecuteNonQuery();
             }
 
+            Console.WriteLine("Data ingestion complete.");
             return true;
         }
     }
