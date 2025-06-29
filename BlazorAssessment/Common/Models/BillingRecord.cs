@@ -8,7 +8,7 @@
         public string State { get; set; }
         public string HCPCScode { get; set; }
         public string PlaceOfService { get; set; }
-        public int NumberOfServices { get; set; }
+        public decimal NumberOfServices { get; set; }
         public decimal TotalMedicarePayment { get; set; }
     }
 }

@@ -1,3 +1,5 @@
 bin/
 obj/
 .vs
+/BlazorAssessment/Data/database.db
+/BlazorAssessment/Data/database.db-journal

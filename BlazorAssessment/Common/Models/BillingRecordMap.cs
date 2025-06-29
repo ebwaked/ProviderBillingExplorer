@@ -14,8 +14,8 @@ namespace Common.Models
             Map(m => m.State).Name("Rndrng_Prvdr_State_Abrvtn");
             Map(m => m.HCPCScode).Name("HCPCS_Cd");
             Map(m => m.PlaceOfService).Name("Place_Of_Srvc");
-            Map(m => m.NumberOfServices).Name("Tot_Srvcs").TypeConverterOption.NumberStyles(NumberStyles.Integer);
-            Map(m => m.TotalMedicarePayment).Name("Avg_Mdcr_Pymt_Amt").TypeConverterOption.NumberStyles(NumberStyles.Any);
+            Map(m => m.NumberOfServices).Name("Tot_Srvcs").TypeConverterOption.NumberStyles(NumberStyles.AllowDecimalPoint);
+            Map(m => m.TotalMedicarePayment).Name("Avg_Mdcr_Pymt_Amt").TypeConverterOption.NumberStyles(NumberStyles.AllowDecimalPoint);
         }
     }
 
