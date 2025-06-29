@@ -74,6 +74,11 @@ namespace DataIngestionConsole
             // Prepare provider cache to avoid duplicate inserts
             var providerNpis = new HashSet<string>();
 
+            // Set PRAGMA settings for performance
+            var pragmaCommand = connection.CreateCommand();
+            pragmaCommand.CommandText = "PRAGMA journal_mode = WAL; PRAGMA synchronous = OFF; PRAGMA cache_size = 1000000; PRAGMA temp_store = MEMORY";
+            await pragmaCommand.ExecuteNonQueryAsync();
+
             // Prepare commands
             using var providerCmd = connection.CreateCommand();
             providerCmd.CommandText = @"
@@ -95,7 +100,7 @@ namespace DataIngestionConsole
             var payParam = billingCmd.Parameters.Add("@TotalMedicarePayment", SqliteType.Real);
 
             int count = 0;
-            int batchSize = 1000;
+            int batchSize = 100000;
 
             using (var stream = new FileStream(_csvFilePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
             using (var reader = new StreamReader(stream))

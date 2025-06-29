@@ -3,3 +3,5 @@ obj/
 .vs
 /BlazorAssessment/Data/database.db
 /BlazorAssessment/Data/database.db-journal
+/BlazorAssessment/Data/database.db-shm
+/BlazorAssessment/Data/database.db-wal
