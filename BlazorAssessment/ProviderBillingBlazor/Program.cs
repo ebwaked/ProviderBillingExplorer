@@ -6,7 +6,14 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Build the absolute path to the database, relative to the project directory
 var projectDir = AppContext.BaseDirectory;
-var dbPath = Path.GetFullPath(Path.Combine(projectDir, @"..\..\Data\database.db"));
+var dbPath = Path.GetFullPath(Path.Combine(projectDir, @"..\..\..\..\Data\database.db"));
+
+// Ensure the directory exists
+var dbDir = Path.GetDirectoryName(dbPath);
+if (!Directory.Exists(dbDir))
+{
+    throw new Exception($"Database directory does not exist: {dbDir}");
+}
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

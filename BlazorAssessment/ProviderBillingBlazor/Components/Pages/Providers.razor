@@ -1,17 +1,116 @@
-﻿@using ProviderBilling.Data
+﻿@using Microsoft.EntityFrameworkCore
+@using ProviderBilling.Data
+@using Common.Models
 @page "/providers"
 @inject ProviderBillingContext Db
 
 <h1>Providers</h1>
-@* <input @bind="searchTerm" @oninput="OnSearchInput" placeholder="Search NPI or Name" />
-<select @bind="selectedSpecialty">...</select>
-<select @bind="selectedState">...</select>
 
-<Virtualize Items="@filteredProviders" Context="provider">
-    <tr>
-        <td>@provider.NPI</td>
-        <td>@provider.Name</td>
-        <td>@provider.Specialty</td>
-        <td>@provider.State</td>
-    </tr>
-</Virtualize> *@
+<div class="mb-3">
+    <input class="form-control" @bind="searchTerm" @oninput="OnSearchInput" placeholder="Search NPI or Name" />
+</div>
+<div class="mb-3 d-flex gap-2">
+    <select class="form-select" @bind="selectedSpecialty">
+        <option value="">All Specialties</option>
+        @foreach (var spec in specialties)
+        {
+            <option value="@spec">@spec</option>
+        }
+    </select>
+    <select class="form-select" @bind="selectedState">
+        <option value="">All States</option>
+        @foreach (var st in states)
+        {
+            <option value="@st">@st</option>
+        }
+    </select>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>NPI</th>
+            <th>Name</th>
+            <th>Specialty</th>
+            <th>State</th>
+        </tr>
+    </thead>
+    <tbody>
+        <Virtualize ItemsProvider="LoadProviders" Context="provider">
+            <tr>
+                <td>@provider.NPI</td>
+                <td>@provider.ProviderName</td>
+                <td>@provider.Specialty</td>
+                <td>@provider.State</td>
+            </tr>
+        </Virtualize>
+    </tbody>
+</table>
+
+@code {
+    private string searchTerm = "";
+    private string selectedSpecialty = "";
+    private string selectedState = "";
+    private List<string> specialties = new();
+    private List<string> states = new();
+
+    private System.Timers.Timer? debounceTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        specialties = await Db.Providers
+            .Select(p => p.Specialty)
+            .Where(s => !string.IsNullOrEmpty(s))
+            .Distinct()
+            .OrderBy(s => s)
+            .ToListAsync();
+
+        states = await Db.Providers
+            .Select(p => p.State)
+            .Where(s => !string.IsNullOrEmpty(s))
+            .Distinct()
+            .OrderBy(s => s)
+            .ToListAsync();
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        debounceTimer?.Stop();
+        debounceTimer?.Dispose();
+
+        debounceTimer = new System.Timers.Timer(400) { AutoReset = false };
+        debounceTimer.Elapsed += async (_, _) =>
+        {
+            await InvokeAsync(StateHasChanged);
+        };
+        debounceTimer.Start();
+    }
+
+    private async ValueTask<ItemsProviderResult<Provider>> LoadProviders(ItemsProviderRequest request)
+    {
+        var query = Db.Providers.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(selectedSpecialty))
+            query = query.Where(p => p.Specialty == selectedSpecialty);
+
+        if (!string.IsNullOrWhiteSpace(selectedState))
+            query = query.Where(p => p.State == selectedState);
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var term = searchTerm.ToLower();
+            query = query.Where(p =>
+                p.NPI.Contains(term) ||
+                p.ProviderName.ToLower().Contains(term));
+        }
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(p => p.ProviderName)
+            .Skip(request.StartIndex)
+            .Take(request.Count)
+            .ToListAsync();
+
+        return new ItemsProviderResult<Provider>(items, totalCount);
+    }
+}
