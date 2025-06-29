@@ -119,9 +119,9 @@ namespace DataIngestionConsole
                     if (providerNpis.Add(record.NPI))
                     {
                         npiParam.Value = record.NPI;
-                        nameParam.Value = record.ProviderName;
-                        specParam.Value = record.Specialty ?? string.Empty;
-                        stateParam.Value = record.State;
+                        nameParam.Value = record.Provider.ProviderName;
+                        specParam.Value = record.Provider.ProviderName ?? string.Empty;
+                        stateParam.Value = record.Provider.ProviderName;
                         providerCmd.ExecuteNonQuery();
                     }
 
