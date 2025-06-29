@@ -4,31 +4,7 @@
 
 ---
 
-## 📕 Background and Rationale
-
-At CompIQ, one of our primary responsibilities is ingesting data from disparate sources and displaying that data to our customers, both internal and external.
-
-This assessment tests your ability to ingest data, create efficient indexes on that data and display it to a potential customer. The best solutions will utilize common logic between the DataIngestionConsole and the ProviderBillingBlazor projects. You may add additional class libraries as needed.
-
-You should be able to complete this assessment in roughly 6 hours.
-
----
-
-## 📩 Submission
-
-Fork this repository and submit a link to your completed fork via email.
-
----
-
 ## 🧩 Part 1 – Data Ingestion (/DataIngestionConsole)
-
-### 🎯 Objective
-
-Write a standalone C# console app (or script) that:
-
-- Downloads and parses Medicare billing data
-- Creates a normalized **SQLite database**
-- Populates provider and billing tables efficiently
 
 ### 📥 Dataset
 
@@ -42,41 +18,15 @@ Write a standalone C# console app (or script) that:
 1. **Download & Parse CSV**
     - Download the latest ZIP file containing the CSV
     - Extract and parse the CSV file
-2. **Create SQLite Schema**  
-    Suggested structure:
-    ```sql
-    CREATE TABLE Provider (
-      NPI TEXT PRIMARY KEY,
-      ProviderName TEXT,
-      Specialty TEXT,
-      State TEXT
-    );
-    
-    CREATE TABLE BillingRecord (
-      Id INTEGER PRIMARY KEY AUTOINCREMENT,
-      NPI TEXT,
-      HCPCSCode TEXT,
-      HCPCSDescription TEXT,
-      PlaceOfService TEXT,
-      NumberOfServices INTEGER,
-      TotalMedicarePayment REAL,
-      FOREIGN KEY (NPI) REFERENCES Provider(NPI)
-    );
-    ```
-    
-3. **Populate Database**
-    - Insert all distinct providers first
-    - Insert billing records in bulk (efficient inserts are encouraged)
-    - Optional: add indexes on `NPI`, `Specialty`, `State`, `HCPCSCode`
+    - Rename csv to data.csv
+    - Copy file to C:\data.csv
+    - Alternitively you can adjust the file path and csv name at the top of Program.cs
+2. **Run DataIngestionConsole**
+    - Run the console app to ingest the data
+    - Should take 5-7 minutes
+    - If hardware is an issue adjust batch size to 1000 or 10000 to reduce memory usage
+    - That will increase time to around 15-20 minutes
 
----
-
-### ✅ Deliverables for Part 1
-
-- C# Console app or script (e.g., `.csproj`)    
-- README describing:
-    - How to run the script
-    - Any assumptions or transformations made
 
 ---
 
