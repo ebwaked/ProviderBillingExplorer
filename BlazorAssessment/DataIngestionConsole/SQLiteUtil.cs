@@ -120,8 +120,8 @@ namespace DataIngestionConsole
                     {
                         npiParam.Value = record.NPI;
                         nameParam.Value = record.Provider.ProviderName;
-                        specParam.Value = record.Provider.ProviderName ?? string.Empty;
-                        stateParam.Value = record.Provider.ProviderName;
+                        specParam.Value = record.Provider.Specialty ?? string.Empty;
+                        stateParam.Value = record.Provider.State;
                         providerCmd.ExecuteNonQuery();
                     }
 
