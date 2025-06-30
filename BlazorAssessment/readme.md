@@ -13,7 +13,7 @@
 
 ---
 
-### 🧱 Requirements
+### 🧱 How to Ingest Data
 
 1. **Download & Parse CSV**
     - Download the latest ZIP file containing the CSV
