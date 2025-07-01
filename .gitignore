@@ -7,3 +7,4 @@ obj/
 /BlazorAssessment/Data/database.db-wal
 /BlazorAssessment/Data/bck
 /BlazorAssessment/Data/indexDescBck
+/BlazorAssessment/Data/allIndexBck
