@@ -45,6 +45,7 @@ namespace DataIngestionConsole
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         NPI TEXT,
                         HCPCScode TEXT,
+                        HCPCSdesc TEXT,
                         PlaceOfService TEXT,
                         NumberOfServices INTEGER,
                         TotalMedicarePayment REAL,
@@ -91,10 +92,11 @@ namespace DataIngestionConsole
 
             using var billingCmd = connection.CreateCommand();
             billingCmd.CommandText = @"
-        INSERT INTO BillingRecord (NPI, HCPCScode, PlaceOfService, NumberOfServices, TotalMedicarePayment)
-        VALUES (@NPI, @HCPCScode, @PlaceOfService, @NumberOfServices, @TotalMedicarePayment)";
+        INSERT INTO BillingRecord (NPI, HCPCScode, HCPCSdesc, PlaceOfService, NumberOfServices, TotalMedicarePayment)
+        VALUES (@NPI, @HCPCScode, @HCPCSdesc, @PlaceOfService, @NumberOfServices, @TotalMedicarePayment)";
             var bNpiParam = billingCmd.Parameters.Add("@NPI", SqliteType.Text);
             var hcpcsParam = billingCmd.Parameters.Add("@HCPCScode", SqliteType.Text);
+            var hcpcsDescParam = billingCmd.Parameters.Add("@HCPCSdesc", SqliteType.Text);
             var posParam = billingCmd.Parameters.Add("@PlaceOfService", SqliteType.Text);
             var numParam = billingCmd.Parameters.Add("@NumberOfServices", SqliteType.Integer);
             var payParam = billingCmd.Parameters.Add("@TotalMedicarePayment", SqliteType.Real);
@@ -128,6 +130,7 @@ namespace DataIngestionConsole
                     // Insert billing record
                     bNpiParam.Value = record.NPI;
                     hcpcsParam.Value = record.HCPCScode;
+                    hcpcsDescParam.Value = record.HCPCSdesc;
                     posParam.Value = record.PlaceOfService;
                     numParam.Value = record.NumberOfServices;
                     payParam.Value = record.TotalMedicarePayment;
@@ -157,7 +160,8 @@ namespace DataIngestionConsole
             CREATE INDEX IF NOT EXISTS idx_provider_npi ON Provider(NPI);
             CREATE INDEX IF NOT EXISTS idx_provider_specialty ON Provider(Specialty);
             CREATE INDEX IF NOT EXISTS idx_provider_state ON Provider(State);
-            CREATE INDEX IF NOT EXISTS idx_billing_hcpcs ON BillingRecord(HCPCScode);";
+            CREATE INDEX IF NOT EXISTS idx_billing_hcpcs ON BillingRecord(HCPCScode);
+            CREATE INDEX IF NOT EXISTS idx_billing_npi ON BillingRecord(NPI);";
                 cmd.ExecuteNonQuery();
             }
 

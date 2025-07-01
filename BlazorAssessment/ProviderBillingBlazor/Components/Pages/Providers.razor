@@ -35,6 +35,7 @@
             <th>Name</th>
             <th>Specialty</th>
             <th>State</th>
+            <th>Details</th>
         </tr>
     </thead>
     <tbody>
@@ -44,6 +45,11 @@
                 <td>@provider.ProviderName</td>
                 <td>@provider.Specialty</td>
                 <td>@provider.State</td>
+                <td>
+                    <NavLink class="nav-link" href="@($"/provider/{provider.NPI}")">
+                        @provider.ProviderName
+                    </NavLink>
+                </td>
             </tr>
         </Virtualize>
     </tbody>

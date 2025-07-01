@@ -1,22 +1,80 @@
-﻿@using ProviderBilling.Data
-
-@page "/provider/{Npi:int}"
+﻿@page "/provider/{Npi:int}"
+@using ProviderBilling.Data
+@using Common.Models
+@using Microsoft.EntityFrameworkCore
 @inject ProviderBillingContext Db
 
-<!-- Table for top 10 HCPCS codes -->
-<table>
-    <thead>Top 10 HCPCS codes by total Medicare payment</thead>
-    <tbody>
-        @* @foreach (var item in topHcpcs)
-        {
-            <tr>
-                <td>@item.HcpcsCode</td>
-                <td>@item.Description</td>
-                <td>@item.ServiceCount</td>
-                <td>@item.TotalPayment</td>
-            </tr>
-        } *@
-    </tbody>
-</table>
+<h3>Top 10 HCPCS codes by total Medicare payment</h3>
 
-<!-- Optional: ChartJs.Blazor bar chart here -->
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2">Loading provider details...</span>
+    </div>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>HCPCS Code</th>
+                <th>Description</th>
+                <th>Number of Services</th>
+                <th>Total Medicare Payment</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (topHcpcs != null)
+            {
+                @foreach (var item in topHcpcs)
+                {
+                    <tr>
+                        <td>@item.HcpcsCode</td>
+                        <td>@item.Description</td>
+                        <td>@item.ServiceCount</td>
+                        <td>@item.TotalPayment.ToString("C")</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public int Npi { get; set; }
+
+    private List<HcpcsSummary> topHcpcs;
+    private bool isLoading = true;
+    private bool _dataLoaded = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_dataLoaded)
+        {
+            isLoading = true;
+            StateHasChanged(); // Show spinner
+
+            topHcpcs = await Db.BillingRecords
+                .Where(b => b.NPI == Npi.ToString())
+                .GroupBy(b => new { b.HCPCScode, b.HCPCSdesc })
+                .Select(g => new HcpcsSummary
+                {
+                    HcpcsCode = g.Key.HCPCScode,
+                    Description = g.Key.HCPCSdesc,
+                    ServiceCount = g.Sum(x => (int)x.NumberOfServices),
+                    TotalPayment = g.Sum(x => x.TotalMedicarePayment)
+                })
+                .OrderByDescending(x => x.TotalPayment)
+                .Take(10)
+                .ToListAsync();
+
+            isLoading = false;
+            _dataLoaded = true;
+            StateHasChanged(); // Show data
+        }
+    }
+}

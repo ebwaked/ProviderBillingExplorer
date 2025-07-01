@@ -12,6 +12,7 @@ namespace Common.Models
         [ForeignKey(nameof(NPI))]
         public Provider? Provider { get; set; }
         public string HCPCScode { get; set; } = default!;
+        public string HCPCSdesc { get; set;} = default!;
         public string PlaceOfService { get; set; } = default!;
         public decimal NumberOfServices { get; set; }
         public decimal TotalMedicarePayment { get; set; }
