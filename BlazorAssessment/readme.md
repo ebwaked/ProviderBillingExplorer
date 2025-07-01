@@ -41,12 +41,5 @@
 #### 2. **Provider Detail Page**
     
 - Navigate to from the table on the Providers page by clicking the link under details for the row you are accessing
-- Optional: Include a **bar chart** (e.g. ChartJs.Blazor) to visualize payments by HCPCS code
 
 ---
-
-### 💡 Optional Bonus Features
-
-- Include **"Export to CSV"** button for current view
-- Show **national average** for selected HCPCS codes (across all providers)
-- Use EF-Core in a shared libary to handle the db operations
