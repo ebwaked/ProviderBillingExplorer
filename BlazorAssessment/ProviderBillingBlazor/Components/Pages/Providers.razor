@@ -3,11 +3,12 @@
 @using Common.Models
 @page "/providers"
 @inject ProviderBillingContext Db
+@rendermode InteractiveServer
 
 <h1>Providers</h1>
 
 <div class="mb-3">
-    <input class="form-control" @bind="searchTerm" @oninput="OnSearchInput" placeholder="Search NPI or Name" />
+    <input id="searchInput" class="form-control" @bind="searchTerm" @oninput="OnSearchInput" placeholder="Search NPI or Name" />
 </div>
 <div class="mb-3 d-flex gap-2">
     <select class="form-select" @bind="selectedSpecialty">
@@ -36,7 +37,7 @@
         </tr>
     </thead>
     <tbody>
-        <Virtualize ItemsProvider="LoadProviders" Context="provider">
+        <Virtualize @ref="virtualizeRef" ItemsProvider="LoadProviders" Context="provider">
             <tr>
                 <td>@provider.NPI</td>
                 <td>@provider.ProviderName</td>
@@ -48,9 +49,10 @@
 </table>
 
 @code {
-    private string searchTerm = "";
-    private string selectedSpecialty = "";
-    private string selectedState = "";
+    private Virtualize<Provider>? virtualizeRef;
+    private string searchTerm = string.Empty;
+    private string selectedSpecialty = string.Empty;
+    private string selectedState = string.Empty;
     private List<string> specialties = new();
     private List<string> states = new();
 
@@ -73,15 +75,21 @@
             .ToListAsync();
     }
 
-    private void OnSearchInput(ChangeEventArgs e)
+    private async Task OnSearchInput(ChangeEventArgs e)
     {
+        searchTerm = e.Value?.ToString() ?? "";
         debounceTimer?.Stop();
         debounceTimer?.Dispose();
 
         debounceTimer = new System.Timers.Timer(400) { AutoReset = false };
         debounceTimer.Elapsed += async (_, _) =>
         {
-            await InvokeAsync(StateHasChanged);
+            await InvokeAsync(async () =>
+            {
+                StateHasChanged();
+                if (virtualizeRef != null)
+                    await virtualizeRef.RefreshDataAsync();
+            });
         };
         debounceTimer.Start();
     }
@@ -100,7 +108,7 @@
         {
             var term = searchTerm.ToLower();
             query = query.Where(p =>
-                p.NPI.Contains(term) ||
+                p.NPI.ToLower().Contains(term) ||
                 p.ProviderName.ToLower().Contains(term));
         }
 
