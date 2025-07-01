@@ -161,6 +161,7 @@ namespace DataIngestionConsole
             CREATE INDEX IF NOT EXISTS idx_provider_specialty ON Provider(Specialty);
             CREATE INDEX IF NOT EXISTS idx_provider_state ON Provider(State);
             CREATE INDEX IF NOT EXISTS idx_billing_hcpcs ON BillingRecord(HCPCScode);";
+            //CREATE INDEX IF NOT EXISTS idx_billing_npi ON BillingRecord(HCPCSdesc);            
             //CREATE INDEX IF NOT EXISTS idx_billing_npi ON BillingRecord(NPI);";
                 cmd.ExecuteNonQuery();
             }

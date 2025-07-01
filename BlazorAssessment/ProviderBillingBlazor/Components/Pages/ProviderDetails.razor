@@ -27,7 +27,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @if (topHcpcs != null)
+            @if (topHcpcs != null && topHcpcs.Any())
             {
                 @foreach (var item in topHcpcs)
                 {
@@ -38,6 +38,12 @@ else
                         <td>@item.TotalPayment.ToString("C")</td>
                     </tr>
                 }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4">No data available for this provider.</td>
+                </tr>
             }
         </tbody>
     </table>
@@ -53,29 +59,77 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Console.WriteLine("OnAfterRenderAsync called");
         if (firstRender && !_dataLoaded)
         {
-            isLoading = true;
-            StateHasChanged(); // Show spinner
+            try
+            {
+                isLoading = true;
+                StateHasChanged();
 
-            topHcpcs = await Db.BillingRecords
-                .AsNoTracking()
-                .Where(b => b.NPI == Npi.ToString())
-                .GroupBy(b => new { b.HCPCScode, b.HCPCSdesc })
-                .Select(g => new HcpcsSummary
-                {
-                    HcpcsCode = g.Key.HCPCScode,
-                    Description = g.Key.HCPCSdesc,
-                    ServiceCount = g.Sum(x => (int)x.NumberOfServices),
-                    TotalPayment = g.Sum(x => x.TotalMedicarePayment)
-                })
-                .OrderByDescending(x => x.TotalPayment)
-                .Take(10)
-                .ToListAsync();
+                topHcpcs = await Db.BillingRecords
+                    .AsNoTracking()
+                    .Where(b => b.NPI == Npi.ToString())
+                    .GroupBy(b => new { b.HCPCScode, b.HCPCSdesc })
+                    .Select(g => new HcpcsSummary
+                    {
+                        HcpcsCode = g.Key.HCPCScode,
+                        Description = g.Key.HCPCSdesc,
+                        ServiceCount = g.Sum(x => (int)x.NumberOfServices),
+                        TotalPayment = g.Sum(x => x.TotalMedicarePayment)
+                    })
+                    .OrderByDescending(x => x.TotalPayment)
+                    .Take(10)
+                    .ToListAsync();
 
-            isLoading = false;
-            _dataLoaded = true;
-            StateHasChanged(); // Show data
+                isLoading = false;
+                _dataLoaded = true;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                isLoading = false;
+                // Log the exception (e.g., to console or a logging service)
+                Console.WriteLine($"Error loading data: {ex.Message}");
+                StateHasChanged();
+            }
         }
     }
+
+    // protected override async Task OnParametersSetAsync()
+    // {
+    //     if (!_dataLoaded)
+    //     {
+    //         try
+    //         {
+    //             isLoading = true;
+    //             StateHasChanged();
+
+    //             topHcpcs = await Db.BillingRecords
+    //                 .AsNoTracking()
+    //                 .Where(b => b.NPI == Npi.ToString())
+    //                 .GroupBy(b => new { b.HCPCScode, b.HCPCSdesc })
+    //                 .Select(g => new HcpcsSummary
+    //                 {
+    //                     HcpcsCode = g.Key.HCPCScode,
+    //                     Description = g.Key.HCPCSdesc,
+    //                     ServiceCount = g.Sum(x => (int)x.NumberOfServices),
+    //                     TotalPayment = g.Sum(x => x.TotalMedicarePayment)
+    //                 })
+    //                 .OrderByDescending(x => x.TotalPayment)
+    //                 .Take(10)
+    //                 .ToListAsync();
+
+    //             isLoading = false;
+    //             _dataLoaded = true;
+    //             StateHasChanged();
+    //         }
+    //         catch (Exception ex)
+    //         {
+    //             isLoading = false;
+    //             Console.WriteLine($"Error: {ex.Message}");
+    //             StateHasChanged();
+    //         }
+    //     }
+    // }
 }
