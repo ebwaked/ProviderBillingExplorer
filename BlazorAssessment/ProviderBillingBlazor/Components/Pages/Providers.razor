@@ -1,6 +1,7 @@
 ﻿@using Microsoft.EntityFrameworkCore
 @using ProviderBilling.Data
 @using Common.Models
+@using System.Timers
 @page "/providers"
 @inject ProviderBillingContext Db
 @rendermode InteractiveServer
@@ -51,12 +52,48 @@
 @code {
     private Virtualize<Provider>? virtualizeRef;
     private string searchTerm = string.Empty;
-    private string selectedSpecialty = string.Empty;
-    private string selectedState = string.Empty;
+    private string _selectedSpecialty = string.Empty;
+    private string _selectedState = string.Empty;
     private List<string> specialties = new();
     private List<string> states = new();
 
-    private System.Timers.Timer? debounceTimer;
+    private Timer? debounceTimer;
+
+    public string selectedSpecialty
+    {
+        get => _selectedSpecialty;
+        set
+        {
+            if (_selectedSpecialty != value)
+            {
+                _selectedSpecialty = value;
+                _ = RefreshProvidersAsync();
+            }
+        }
+    }
+
+    public string selectedState
+    {
+        get => _selectedState;
+        set
+        {
+            if (_selectedState != value)
+            {
+                _selectedState = value;
+                _ = RefreshProvidersAsync();
+            }
+        }
+    }
+
+    private async Task RefreshProvidersAsync()
+    {
+        await InvokeAsync(async () =>
+        {
+            StateHasChanged();
+            if (virtualizeRef != null)
+                await virtualizeRef.RefreshDataAsync();
+        });
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,7 +118,7 @@
         debounceTimer?.Stop();
         debounceTimer?.Dispose();
 
-        debounceTimer = new System.Timers.Timer(400) { AutoReset = false };
+        debounceTimer = new System.Timers.Timer(250) { AutoReset = false };
         debounceTimer.Elapsed += async (_, _) =>
         {
             await InvokeAsync(async () =>
