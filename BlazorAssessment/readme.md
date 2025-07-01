@@ -32,69 +32,21 @@
 
 ## 🌐 Part 2 – Blazor Server App (/ProviderBillingBlazor)
 
-### 🎯 Objective
-
-Use the SQLite database from Part 1 to create a **Blazor Server** app that allows users to explore provider billing data.
-
 ---
-
-### 🧱 Requirements
 
 #### 1. **Provider List Page**
 
-- Display: 
-    - NPI
-    - Name
-    - Specialty
-    - State
-    
-- Filters:
-    - Specialty (dropdown)
-    - State (dropdown)
-    
-- Search by NPI or Name (with debounced input)
-- Optional: paging or virtualization for large result sets
+- Added virtualization for large result sets
 
 #### 2. **Provider Detail Page**
-
-- Shows **top 10 HCPCS codes** by total Medicare payment
-- Display in a table:
-    - HCPCS Code
-    - Description
-    - Number of Services
-    - Total Medicare Payment
     
+- Navigate to from the table on the Providers page by clicking the link under details for the row you are accessing
 - Optional: Include a **bar chart** (e.g. ChartJs.Blazor) to visualize payments by HCPCS code
 
 ---
 
 ### 💡 Optional Bonus Features
 
-- Filter detail view by **Place of Service**
 - Include **"Export to CSV"** button for current view
 - Show **national average** for selected HCPCS codes (across all providers)
 - Use EF-Core in a shared libary to handle the db operations
-
-
----
-
-### 📦 Deliverables for Part 2
-
-- Blazor Server app (`.NET 8`) 
-- README with:
-    - Setup instructions
-    - Navigation overview
-    - Any optional features implemented
-
----
-
-### 🧪 Evaluation Criteria (Across Both Parts)
-
-| Category             | What to Look For                                        |
-| -------------------- | ------------------------------------------------------- |
-| **Data Engineering** | CSV handling, schema normalization, efficient ingestion |
-| **Blazor Skills**    | Component structure, routing, state handling            |
-| **Query Design**     | LINQ or SQL performance, filtering, grouping            |
-| **UI/UX**            | Usability, filter interactivity, responsive layout      |
-| **Code Quality**     | Clarity, modularity, appropriate abstraction            |
-| **Optional Extras**  | Charting, export, comparison logic                      |

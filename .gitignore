@@ -6,3 +6,4 @@ obj/
 /BlazorAssessment/Data/database.db-shm
 /BlazorAssessment/Data/database.db-wal
 /BlazorAssessment/Data/bck
+/BlazorAssessment/Data/indexDescBck

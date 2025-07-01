@@ -59,6 +59,7 @@ else
             StateHasChanged(); // Show spinner
 
             topHcpcs = await Db.BillingRecords
+                .AsNoTracking()
                 .Where(b => b.NPI == Npi.ToString())
                 .GroupBy(b => new { b.HCPCScode, b.HCPCSdesc })
                 .Select(g => new HcpcsSummary
